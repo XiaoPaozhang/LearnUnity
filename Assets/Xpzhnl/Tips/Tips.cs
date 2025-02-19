@@ -5,7 +5,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Xpzhnl
+namespace LearnUnity
 {
   public class Tips : MonoBehaviour
   {
