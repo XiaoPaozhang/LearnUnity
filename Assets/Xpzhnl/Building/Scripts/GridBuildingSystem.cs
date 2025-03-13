@@ -47,29 +47,24 @@ public class GridBuildingSystem : MonoBehaviour
     #region Unity生命周期
     void Start()
     {
-        // 修改后的资源加载代码（添加验证）
+        // 在Start方法中修改资源加载部分
         string tilePath = @"Tiles/";
         tileBases.Add(TileType.Empty, null);
 
         int loadedCount = 0;
-        for (int i = 0; i <= 33; i++)
-        {
-            string path = $"{tilePath}Tilemap_Flat_{i}";
-            TileBase tile = Resources.Load<TileBase>(path);
+        List<TileBase> allTiles = Resources.LoadAll<TileBase>(tilePath).ToList();
 
-            if (tile != null)
+        foreach (TileBase tile in allTiles)
+        {
+            if (tile.name.StartsWith("Tilemap_Flat_"))
             {
                 whiteTiles.Add(tile);
                 loadedCount++;
-                Debug.Log($"成功加载：{path} 名称：{tile.name}");
-            }
-            else
-            {
-                Debug.LogError($"加载失败：{path}");
+                Debug.Log($"成功加载：{tile.name}");
             }
         }
 
-        Debug.Log($"白名单加载完成，成功加载{loadedCount}/34个Tile");
+        Debug.Log($"白名单加载完成，成功加载{loadedCount}个Tile");
 
         // 加载绿/红指示Tile
         tileBases.Add(TileType.Green,
@@ -82,6 +77,7 @@ public class GridBuildingSystem : MonoBehaviour
     }
 
     // 始化可建造区域
+    // 修改后的InitializeBuildableCells方法
     private void InitializeBuildableCells()
     {
         BoundsInt bounds = MainTilemap.cellBounds;
@@ -101,15 +97,10 @@ public class GridBuildingSystem : MonoBehaviour
             Debug.Log($"发现Tile：位置{pos} 名称{(tile ? tile.name : "null")}");
             validCount++;
 
+            // 修改匹配逻辑：检查名称是否包含"Tilemap_Flat_"
             bool isWhiteTile = whiteTiles.Any(t =>
-            {
-                if (t == null)
-                {
-                    Debug.LogWarning("白名单中存在空Tile引用！");
-                    return false;
-                }
-                return t.name == tile.name;
-            });
+                t != null && tile != null &&
+                t.name.StartsWith("Tilemap_Flat_"));
 
             if (isWhiteTile)
             {
@@ -120,17 +111,8 @@ public class GridBuildingSystem : MonoBehaviour
 
         Debug.Log($"扫描完成，有效Tile数量：{validCount}，可建造格子数：{buildableCells.Count}");
 
-        // 强制添加测试坐标（临时方案）
-        if (buildableCells.Count == 0)
-        {
-            Debug.LogWarning("正在注入测试坐标");
-            buildableCells.Add(Vector3Int.zero);
-            buildableCells.Add(Vector3Int.right);
-            buildableCells.Add(Vector3Int.up);
-        }
+        // 移除强制添加测试坐标的代码
     }
-
-
     void Update()
     {
 
