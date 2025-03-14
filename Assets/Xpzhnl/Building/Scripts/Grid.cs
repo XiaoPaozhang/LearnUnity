@@ -4,12 +4,12 @@ using UnityEngine;
 
 namespace LearnUnity
 {
-    public class Grid : MonoBehaviour
-    {
-        public int x;
-        public int y;
-        public int z;
+  public class Grid : MonoBehaviour
+  {
+    public int x;
+    public int y;
+    public int z;
 
 
-    }
+  }
 }
