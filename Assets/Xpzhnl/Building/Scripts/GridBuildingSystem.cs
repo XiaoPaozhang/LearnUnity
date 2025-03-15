@@ -4,10 +4,24 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
+//写一个压缩tilmap的边界编辑器菜单
+// class TilemapCompress : Editor
+// {
+//   [MenuItem("Tools/Tilemap/Compress Bounds")]
+//   static void CompressBounds()
+//   {
+//     Tilemap tilemap = Selection.activeGameObject.GetComponent<Tilemap>();
+//     BoundsInt bounds = tilemap.cellBounds;
+//     tilemap.CompressBounds();
+//     Debug.Log($"压缩前：{bounds} 压缩后：{tilemap.cellBounds}");
+//   }
+// }
 public class GridBuildingSystem : MonoBehaviour
 {
   // 单例模式实现
@@ -26,11 +40,8 @@ public class GridBuildingSystem : MonoBehaviour
   // 临时瓦片地图（预览位置）
   public Tilemap TempTilemap;
 
-  // Tile类型字典（空/绿/红）
+  // Tile类型字典（空/绿/红/可建造）
   private static Dictionary<TileType, TileBase> tileBases = new Dictionary<TileType, TileBase>();
-
-  //! 白色Tile集合（所有可放置基底）
-  private static HashSet<TileBase> whiteTiles = new HashSet<TileBase>();
 
   // 添加这两个私有字段来存储地图数据
   private HashSet<Vector3Int> buildableCells = new HashSet<Vector3Int>(); // 可建造的格子坐标
@@ -47,36 +58,18 @@ public class GridBuildingSystem : MonoBehaviour
   #region Unity生命周期
   void Start()
   {
-    // 在Start方法中修改资源加载部分
     string tilePath = @"Tiles/";
-    tileBases.Add(TileType.Empty, null);
-
-    int loadedCount = 0;
-    List<TileBase> allTiles = Resources.LoadAll<TileBase>(tilePath).ToList();
-
-    foreach (TileBase tile in allTiles)
-    {
-      if (tile.name.StartsWith("Tilemap_Flat_"))
-      {
-        whiteTiles.Add(tile);
-        loadedCount++;
-        Debug.Log($"成功加载：{tile.name}");
-      }
-    }
-
-    Debug.Log($"白名单加载完成，成功加载{loadedCount}个Tile");
-
     // 加载绿/红指示Tile
-    tileBases.Add(TileType.Green,
-        Resources.Load<TileBase>(tilePath + "green"));
-    tileBases.Add(TileType.Red,
-        Resources.Load<TileBase>(tilePath + "red"));
+    tileBases.Add(TileType.Empty, null);
+    tileBases.Add(TileType.Green, Resources.Load<TileBase>(tilePath + "green"));
+    tileBases.Add(TileType.Red, Resources.Load<TileBase>(tilePath + "red"));
+    tileBases.Add(TileType.White, Resources.Load<TileBase>(tilePath + "Tilemap_Flat_RuleTile"));
 
     // 新增：初始化时扫描MainTilemap获取可建造区域
     InitializeBuildableCells();
   }
 
-  // 始化可建造区域
+  // 初始化可建造区域
   // 修改后的InitializeBuildableCells方法
   private void InitializeBuildableCells()
   {
@@ -88,6 +81,7 @@ public class GridBuildingSystem : MonoBehaviour
     {
       Vector3Int pos = new Vector3Int(position.x, position.y, 0);
 
+      //在位置上找不到瓦片
       if (!MainTilemap.HasTile(pos))
       {
         continue;
@@ -97,10 +91,8 @@ public class GridBuildingSystem : MonoBehaviour
       Debug.Log($"发现Tile：位置{pos} 名称{(tile ? tile.name : "null")}");
       validCount++;
 
-      // 修改匹配逻辑：检查名称是否包含"Tilemap_Flat_"
-      bool isWhiteTile = whiteTiles.Any(t =>
-          t != null && tile != null &&
-          t.name.StartsWith("Tilemap_Flat_"));
+      // 检查是否为可放置地块
+      bool isWhiteTile = tile.name == tileBases[TileType.White].name;
 
       if (isWhiteTile)
       {
@@ -111,7 +103,6 @@ public class GridBuildingSystem : MonoBehaviour
 
     Debug.Log($"扫描完成，有效Tile数量：{validCount}，可建造格子数：{buildableCells.Count}");
 
-    // 移除强制添加测试坐标的代码
   }
   void Update()
   {
@@ -119,12 +110,12 @@ public class GridBuildingSystem : MonoBehaviour
     // 在Update中添加临时调试
     if (Input.GetKeyDown(KeyCode.D))
     {
-      Debug.Log("=== 当前可建造坐标 ===");
+      Debug.Log($"=== 当前可建造坐标,共{buildableCells.Count} ===");
       foreach (var pos in buildableCells)
       {
         Debug.Log(pos);
       }
-      Debug.Log("=== 当前占用坐标 ===");
+      Debug.Log($"=== 当前占用坐标,共{occupiedCells.Count} ===");
       foreach (var pos in occupiedCells)
       {
         Debug.Log(pos);
@@ -139,6 +130,7 @@ public class GridBuildingSystem : MonoBehaviour
     if (Input.GetMouseButtonDown(0) && temp.CanBePlaced()) // 左键放置
     {
       temp.Place(); // 确认放置
+      temp = null;
       return;
     }
     else if (Input.GetMouseButtonDown(1)) // 右键取消
@@ -185,12 +177,18 @@ public class GridBuildingSystem : MonoBehaviour
     return array;
   }
 
-  private static void SetTilesBlock(BoundsInt area, TileType type, Tilemap tilemap) // 设置瓦片颜色
+  /// <summary>
+  /// 设置瓦片区域  
+  /// </summary>
+  /// <param name="area">区域</param>
+  /// <param name="type">瓦片类型</param>
+  /// <param name="tilemap">瓦片地图</param>
+  private static void SetTilesBlock(BoundsInt area, TileType type, Tilemap tilemap)
   {
     int size = area.size.x * area.size.y * area.size.z;
     TileBase[] tileArray = new TileBase[size];
     FillTiles(tileArray, type);
-    tilemap.SetTilesBlock(area, tileArray); // 设置区域瓦片颜色
+    tilemap.SetTilesBlock(area, tileArray); // 设置区域瓦片
   }
 
   private static void FillTiles(TileBase[] arr, TileType type) // 填充数组，传入我们的枚举即可
@@ -217,9 +215,9 @@ public class GridBuildingSystem : MonoBehaviour
     if (renderer)
     {
       Color semiTransparent = renderer.color;
-      semiTransparent.a = 0.7f;  // 设置透明度为70%
+      semiTransparent.a = 0.7f;
       renderer.color = semiTransparent;
-      renderer.sortingOrder = 1; // 确保在Tilemap上方
+      renderer.sortingOrder = 1;
     }
 
     FollowBuilding();
@@ -264,7 +262,11 @@ public class GridBuildingSystem : MonoBehaviour
     prevArea = buildingArea;
   }
 
-  // 修改后的GridBuildingSystem核心方法
+  /// <summary>
+  /// 是否可以建造
+  /// </summary>
+  /// <param name="area"></param>
+  /// <returns></returns>
   public bool CanTakeArea(BoundsInt area)
   {
     foreach (var position in area.allPositionsWithin)
@@ -282,20 +284,22 @@ public class GridBuildingSystem : MonoBehaviour
     }
     return true;
   }
-  // 修改 GridBuildingSystem.cs 中的 TakeArea 方法
+
+  /// <summary>
+  /// 放置建筑区域
+  /// </summary>
+  /// <param name="area"></param>
   public void TakeArea(BoundsInt area)
   {
-    // 清除临时Tilemap的显示（新增）
+    // 清除临时Tilemap的显示
     SetTilesBlock(area, TileType.Empty, TempTilemap);
 
-    // 更新主Tilemap为绿色（原有逻辑）
-    SetTilesBlock(area, TileType.Green, MainTilemap);
-
-    // 更新数据存储（原有逻辑）
+    // 更新数据存储
     foreach (var pos in area.allPositionsWithin)
     {
       Vector3Int gridPos = new Vector3Int(pos.x, pos.y, 0);
       occupiedCells.Add(gridPos);
+      buildableCells.Remove(gridPos);
     }
   }
 
