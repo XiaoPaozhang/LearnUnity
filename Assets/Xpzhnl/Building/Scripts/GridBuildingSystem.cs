@@ -63,7 +63,7 @@ public class GridBuildingSystem : MonoBehaviour
     tileBases.Add(TileType.Empty, null);
     tileBases.Add(TileType.Green, Resources.Load<TileBase>(tilePath + "green"));
     tileBases.Add(TileType.Red, Resources.Load<TileBase>(tilePath + "red"));
-    tileBases.Add(TileType.White, Resources.Load<TileBase>(tilePath + "Tilemap_Flat_RuleTile"));
+    tileBases.Add(TileType.White, Resources.Load<TileBase>(tilePath + "GrassRuleTile"));
 
     // 新增：初始化时扫描MainTilemap获取可建造区域
     InitializeBuildableCells();
