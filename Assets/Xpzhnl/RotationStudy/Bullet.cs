@@ -4,19 +4,22 @@ using UnityEngine;
 
 namespace LearnUnity
 {
+  /// <summary>
+  /// 子弹
+  /// </summary>
   public class Bullet : MonoBehaviour
   {
+    private float bulletFlySpeed = 5f;
     void Awake()
     {
-      transform.Translate(transform.right);
-      Debug.Log($"我被创建了,我的方向是{transform.right}");
-
-      // Destroy(gameObject, 3);
+      Destroy(gameObject, 4);
     }
 
-    void OnDestroy()
+    void Update()
     {
-      // Debug.Log($"我被销毁了,我的方向是{transform.right}");
+      transform.Translate(Vector2.up * bulletFlySpeed * Time.deltaTime);
     }
+
+
   }
 }

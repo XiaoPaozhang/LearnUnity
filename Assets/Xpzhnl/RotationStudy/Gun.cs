@@ -9,25 +9,33 @@ namespace LearnUnity
   public class Gun : MonoBehaviour
   {
     private Transform GunPoint;
+
     void Start()
     {
       GunPoint = transform.Find("GunPoint");
     }
+
     public void FaceRotation(Vector2 dir)
     {
-      float deg = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+      if (dir == Vector2.zero) return;
+      Debug.Log(dir);
       transform.right = dir.x >= 0 ? dir : -dir;
-      // transform.localRotation = Quaternion.Euler(0, 0, dir.x >= 0 ? deg : -deg + 180);
     }
 
-
-
-    public void GenericBullet(GameObject bullet, Vector2 dir)
+    public void GenericBullet(GameObject bulletPrefab, Vector2 dir)
     {
-      float deg = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-      GameObject go = Instantiate(bullet, GunPoint);
-      go.transform.SetParent(null);
-      transform.localRotation = Quaternion.Euler(0, 0, dir.x >= 0 ? deg : -deg + 180);
+      if (dir == Vector2.zero) return;
+      // 计算子弹朝向
+      float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+
+      // 实例化子弹（直接使用世界坐标）
+      GameObject bullet = Instantiate(
+          bulletPrefab,
+      GunPoint.position,
+      Quaternion.Euler(0, 0, angle)
+      );
+
+
     }
   }
 }

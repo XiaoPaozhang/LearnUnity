@@ -48,13 +48,14 @@ namespace LearnUnity
       //玩家脸朝向
       Mouse mouse = Mouse.current;
 
-      Vector2 mousePosScreen = Camera.main.ScreenToWorldPoint(mouse.position.ReadValue()).normalized;
+      Vector2 mousePosScreen = Camera.main.ScreenToWorldPoint(mouse.position.ReadValue());
 
       FaceRotation(mousePosScreen);
-
+      Debug.Log("鼠标位置" + mousePosScreen);
+      Debug.Log("玩家位置" + (Vector2)transform.position);
       //枪支朝向
-      Vector2 dir = mousePosScreen - (Vector2)transform.position;
-
+      Vector2 dir = (mousePosScreen - (Vector2)transform.position).normalized;
+      Debug.Log("枪支朝向" + dir);
       float deg = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
       if (gun != null)
       {
@@ -62,7 +63,9 @@ namespace LearnUnity
       }
       bool mouse0Down = mouse.leftButton.wasPressedThisFrame;
       if (mouse0Down)
+      {
         gun.GenericBullet(Bullet, dir);
+      }
 
     }
 
