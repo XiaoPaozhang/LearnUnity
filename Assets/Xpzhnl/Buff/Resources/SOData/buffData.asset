@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eb95b90b2517034e972fd1974ab3fd3, type: 3}
+  m_Name: buffData
+  m_EditorClassIdentifier: 
+  buffConfigs:
+  - id: 1
+    buffName: "+30\u653B\u51FB,\u6301\u7EED2s"
+    buffIcon: {fileID: 7939279909673037217, guid: 25b3be9c6b646154ab363354533b3e3e, type: 3}
+    priority: 0
+    maxStack: 1
+    e_BuffUpdateTime: 1
+    e_BuffRemoveStackUpdate: 0
+    isForever: 0
+    duration: 2
+    tickTime: 0
+    onCreate: {fileID: 11400000, guid: b614ab2e18fd9c94180fe5b98e594c9c, type: 2}
+    onRemove: {fileID: 11400000, guid: ca5bd072ed880fa48a74100f1908bc88, type: 2}
+    onTick: {fileID: 0}
+    onHit: {fileID: 0}
+    onBeHurt: {fileID: 0}
+    onKill: {fileID: 0}
+    onBeKill: {fileID: 0}
+  - id: 1
+    buffName: "+30\u653B\u51FB,\u6301\u7EED2s"
+    buffIcon: {fileID: 7939279909673037217, guid: 25b3be9c6b646154ab363354533b3e3e, type: 3}
+    priority: 0
+    maxStack: 5
+    e_BuffUpdateTime: 1
+    e_BuffRemoveStackUpdate: 0
+    isForever: 0
+    duration: 2
+    tickTime: 0
+    onCreate: {fileID: 11400000, guid: b614ab2e18fd9c94180fe5b98e594c9c, type: 2}
+    onRemove: {fileID: 11400000, guid: ca5bd072ed880fa48a74100f1908bc88, type: 2}
+    onTick: {fileID: 0}
+    onHit: {fileID: 0}
+    onBeHurt: {fileID: 0}
+    onKill: {fileID: 0}
+    onBeKill: {fileID: 0}
