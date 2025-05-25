@@ -6,18 +6,11 @@ using UnityEngine.UI;
 
 namespace LearnUnity
 {
-    public class UniTaskTest : MonoBehaviour
+  public class UniTaskTest : MonoBehaviour
+  {
+    void Start()
     {
-        [SerializeField] private Button loadTextBtn;
-        [SerializeField] private Text loadText;
-        [SerializeField] private Slider progressBar;
 
-        void Start()
-        {
-            loadTextBtn.onClick.AddListener(() =>
-            {
-
-            });
-        }
     }
+  }
 }
