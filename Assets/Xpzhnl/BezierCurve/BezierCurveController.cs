@@ -9,7 +9,7 @@ namespace LearnUnity
   /// 完整的贝塞尔曲线箭头系统，包含输入处理和业务逻辑
   /// 可直接在项目中使用
   /// </summary>
-  public class BezierCurveManager : MonoBehaviour
+  public class BezierCurveController : MonoBehaviour
   {
     [Header("贝塞尔曲线控制器")]
     [SerializeField] private BezierCurve curveController;
@@ -141,6 +141,24 @@ namespace LearnUnity
     }
 
     /// <summary>
+    /// 开始显示箭头（从指定坐标位置）
+    /// </summary>
+    /// <param name="startPosition">箭头起始坐标（UI坐标）</param>
+    /// <param name="referenceTransform">参考变换（用于坐标系统参考）</param>
+    public void ShowArrow(Vector2 startPosition, RectTransform referenceTransform = null)
+    {
+      if (curveController == null) return;
+
+      currentStartPoint = referenceTransform ?? defaultStartPoint;
+
+      curveController.ShowArrow(startPosition, currentStartPoint);
+      isDragging = true;
+
+      // 外部事件
+      OnDragStart?.Invoke(startPosition);
+    }
+
+    /// <summary>
     /// 停止显示箭头
     /// </summary>
     public void HideArrow()
@@ -170,11 +188,20 @@ namespace LearnUnity
     #region 自定义逻辑
 
     /// <summary>
+    /// 自定义目标检测函数（外部可设置）
+    /// </summary>
+    public Func<bool> CustomTargetValidityCheck;
+
+    /// <summary>
     /// 检查目标位置是否有效（可以根据项目需求自定义）
     /// </summary>
     private bool CheckTargetValidity()
     {
-      // 示例：检查鼠标是否在屏幕右半部分
+      // 如果有自定义检测函数，优先使用
+      if (CustomTargetValidityCheck != null)
+        return CustomTargetValidityCheck();
+
+      // 默认逻辑：检查鼠标是否在屏幕右半部分
       Vector2 mouseScreenPosition = Input.mousePosition;
       return mouseScreenPosition.x > Screen.width * 0.5f;
     }

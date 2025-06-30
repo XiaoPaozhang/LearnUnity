@@ -26,6 +26,13 @@ namespace LearnUnity
     void ShowArrow(RectTransform startPoint);
 
     /// <summary>
+    /// 显示从指定坐标开始的箭头
+    /// </summary>
+    /// <param name="startPosition">箭头的起始坐标（UI坐标）</param>
+    /// <param name="referenceTransform">参考变换（用于坐标系统参考，可为null）</param>
+    void ShowArrow(Vector2 startPosition, RectTransform referenceTransform = null);
+
+    /// <summary>
     /// 隐藏箭头并恢复鼠标光标可见性
     /// </summary>
     void HideArrow();
