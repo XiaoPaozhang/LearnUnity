@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Xpzhnl/Test/New Scene.unity
     guid: 382a5023ed2dca740ba6941e28f12289
   - enabled: 1
