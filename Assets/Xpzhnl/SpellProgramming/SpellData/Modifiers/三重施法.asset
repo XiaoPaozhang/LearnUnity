@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39594b18a33b719498de64b0011fe0c8, type: 3}
+  m_Name: "\u4E09\u91CD\u65BD\u6CD5"
+  m_EditorClassIdentifier: 
+  spellName: "\u4E09\u91CD\u65BD\u6CD5"
+  description: "\u8BA9\u4E0B\u4E00\u4E2A\u6CD5\u672F\u53D1\u5C043\u6B21"
+  spellType: 1
+  stats:
+    damage: 10
+    manaCost: 10
+    castDelay: 0.1
+    speed: 10
+    lifetime: 5
+    size: 1
+    gravity: 0
+    piercing: 0
+    bounces: 0
+    spread: 5
+    isHoming: 0
+    homingStrength: 0
+    projectileCount: 3
+    projectileSpread: 30
+    triggerDelay: 0
+    triggerCharges: 1
+    triggerRadius: 1
+    elementType: 0
+    explosionRadius: 0
+    explosionDamage: 0
+    damageMultiplier: 1
+    speedMultiplier: 1
+    castDelayModifier: 0
+    isPersistentModifier: 0
+  projectilePrefab: {fileID: 0}
