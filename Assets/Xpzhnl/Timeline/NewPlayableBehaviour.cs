@@ -5,9 +5,11 @@ using UnityEngine.Playables;
 
 namespace LearnUnity
 {
+    
     // A behaviour that is attached to a playable
     public class NewPlayableBehaviour : PlayableBehaviour
     {
+        public string str;
         // Called when the owning graph starts playing
         public override void OnGraphStart(Playable playable)
         {
@@ -35,7 +37,11 @@ namespace LearnUnity
         // Called each frame while the state is set to Play
         public override void PrepareFrame(Playable playable, FrameData info)
         {
-        
+            var a = playable.GetTime();
+            var b = playable.GetDuration();
+            if(a<=( b /2)){
+                Debug.Log("当前时间没超过clip的一半,所以可以打印出来:" + a);
+            }
         }
     }
 }

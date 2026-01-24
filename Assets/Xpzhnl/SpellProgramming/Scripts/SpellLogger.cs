@@ -185,16 +185,6 @@ namespace SpellSystem
         {
             Debug.Log("<color=#303030>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</color>");
         }
-
-        /// <summary>
-        /// 打印配置
-        /// </summary>
-        [RuntimeInitializeOnLoadMethod]
-        private static void PrintConfig()
-        {
-            Debug.Log($"<color={COLOR_SUCCESS}>SpellLogger 已初始化</color>");
-            Debug.Log($"<color={COLOR_SYSTEM}>使用 SpellLogger.EnableXXX 控制日志分类显示</color>");
-        }
     }
 }
 
