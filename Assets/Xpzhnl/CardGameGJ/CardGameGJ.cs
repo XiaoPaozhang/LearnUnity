@@ -119,6 +119,7 @@ namespace Test
     {
         // 游戏状态
         private enum GameState { Start, PlayerTurn, EnemyTurn, GameOver }
+        private enum LogType { Init, UI, Deck, Card, Turn, Battle, Buff, Result }
         private GameState currentState;
 
         // 角色
@@ -144,17 +145,21 @@ namespace Test
         {
             // 初始化所有UI
             CreateAllUI();
+            GameLog(LogType.UI, "UI创建完成");
             // 初始化游戏
             InitGame();
             currentState = GameState.Start;
+            GameLog(LogType.Init, "游戏进入开始状态");
         }
 
         // 初始化游戏数据
         void InitGame()
         {
+            GameLog(LogType.Init, "初始化游戏数据");
             // 创建玩家和敌人
             player = new Character(20, 3);
             enemy = new Character(15, 2);
+            GameLog(LogType.Init, $"创建角色：玩家 {player.currentHp}/{player.maxHp} HP，敌人 {enemy.currentHp}/{enemy.maxHp} HP");
 
             // 初始化卡组（就10张卡，多一张都不要）
             deck.Clear();
@@ -168,12 +173,14 @@ namespace Test
             deck.Add(new Card(5, "眩晕", "使敌人眩晕1回合"));
             deck.Add(new Card(6, "中毒", "使敌人中毒3回合"));
             deck.Add(new Card(7, "再生", "获得3回合每回合回1血"));
+            GameLog(LogType.Deck, $"卡组创建完成，共 {deck.Count} 张牌");
 
             // 洗牌
             ShuffleDeck();
             // 清空手牌和弃牌堆
             hand.Clear();
             discard.Clear();
+            GameLog(LogType.Card, "清空手牌和弃牌堆");
             // 抽初始手牌
             DrawCards(5);
             // 更新UI
@@ -190,6 +197,7 @@ namespace Test
                 deck[i] = deck[randomIndex];
                 deck[randomIndex] = temp;
             }
+            GameLog(LogType.Deck, $"洗牌完成，当前牌库 {deck.Count} 张");
         }
 
         // 抽n张牌
@@ -200,14 +208,17 @@ namespace Test
                 if (deck.Count == 0)
                 {
                     // 牌库空了就把弃牌堆洗回去
+                    GameLog(LogType.Deck, $"牌库为空，将弃牌堆 {discard.Count} 张洗回牌库");
                     deck.AddRange(discard);
                     discard.Clear();
                     ShuffleDeck();
                 }
                 if (deck.Count > 0)
                 {
-                    hand.Add(deck[0]);
+                    Card drawnCard = deck[0];
+                    hand.Add(drawnCard);
                     deck.RemoveAt(0);
+                    GameLog(LogType.Card, $"抽到卡牌：{drawnCard.name}，手牌 {hand.Count} 张，牌库剩余 {deck.Count} 张");
                 }
             }
             // 更新手牌UI
@@ -222,18 +233,46 @@ namespace Test
             Card card = hand[index];
             hand.RemoveAt(index);
             discard.Add(card);
+            GameLog(LogType.Card, $"打出卡牌：{card.name}，手牌剩余 {hand.Count} 张，弃牌堆 {discard.Count} 张");
 
             // 所有卡牌效果硬编码在这里，不要分散
             switch (card.id)
             {
-                case 0: enemy.TakeDamage(player.CalculateDamage()); break;
-                case 1: enemy.TakeDamage(player.CalculateDamage() + 3); break;
-                case 2: player.Heal(4); break;
-                case 3: player.AddBuff(BuffType.DamageUp, 2); break;
-                case 4: player.AddBuff(BuffType.DefenseUp, 2); break;
-                case 5: enemy.AddBuff(BuffType.Stun, 1); break;
-                case 6: enemy.AddBuff(BuffType.Poison, 3); break;
-                case 7: player.AddBuff(BuffType.HealPerTurn, 3); break;
+                case 0:
+                    int normalDamage = player.CalculateDamage();
+                    enemy.TakeDamage(normalDamage);
+                    GameLog(LogType.Battle, $"普通攻击造成 {normalDamage} 点伤害，敌人生命 {enemy.currentHp}/{enemy.maxHp}");
+                    break;
+                case 1:
+                    int heavyDamage = player.CalculateDamage() + 3;
+                    enemy.TakeDamage(heavyDamage);
+                    GameLog(LogType.Battle, $"重击造成 {heavyDamage} 点伤害，敌人生命 {enemy.currentHp}/{enemy.maxHp}");
+                    break;
+                case 2:
+                    int playerHpBeforeHeal = player.currentHp;
+                    player.Heal(4);
+                    GameLog(LogType.Battle, $"玩家恢复 {player.currentHp - playerHpBeforeHeal} 点生命，当前 {player.currentHp}/{player.maxHp}");
+                    break;
+                case 3:
+                    player.AddBuff(BuffType.DamageUp, 2);
+                    GameLog(LogType.Buff, "玩家获得力量：攻击+2，持续2回合");
+                    break;
+                case 4:
+                    player.AddBuff(BuffType.DefenseUp, 2);
+                    GameLog(LogType.Buff, "玩家获得护盾：受伤-1，持续2回合");
+                    break;
+                case 5:
+                    enemy.AddBuff(BuffType.Stun, 1);
+                    GameLog(LogType.Buff, "敌人被眩晕，持续1回合");
+                    break;
+                case 6:
+                    enemy.AddBuff(BuffType.Poison, 3);
+                    GameLog(LogType.Buff, "敌人中毒，持续3回合");
+                    break;
+                case 7:
+                    player.AddBuff(BuffType.HealPerTurn, 3);
+                    GameLog(LogType.Buff, "玩家获得再生：每回合恢复1点生命，持续3回合");
+                    break;
             }
 
             gameInfoText.text = $"你打出了：{card.name}";
@@ -249,6 +288,7 @@ namespace Test
             player.OnTurnEnd();
             currentState = GameState.EnemyTurn;
             gameInfoText.text = "敌人回合";
+            GameLog(LogType.Turn, "玩家回合结束，进入敌人回合");
             Invoke("EnemyTurn", 1f); // 延迟1秒，让玩家看清
         }
 
@@ -256,7 +296,9 @@ namespace Test
         void EnemyTurn()
         {
             // 先执行敌人的回合开始buff
+            int enemyHpBeforeTurnStart = enemy.currentHp;
             bool canAct = enemy.OnTurnStart();
+            LogTurnStartBuffResult("敌人", enemyHpBeforeTurnStart, enemy.currentHp, canAct);
             UpdateAllUI();
 
             if (CheckGameOver()) return;
@@ -271,16 +313,20 @@ namespace Test
                     case 1:
                         player.TakeDamage(enemy.CalculateDamage());
                         gameInfoText.text = "敌人攻击了你！";
+                        GameLog(LogType.Battle, $"敌人攻击玩家，玩家生命 {player.currentHp}/{player.maxHp}");
                         break;
                     case 2:
+                        int enemyHpBeforeHeal = enemy.currentHp;
                         enemy.Heal(2);
                         gameInfoText.text = "敌人恢复了2点生命";
+                        GameLog(LogType.Battle, $"敌人恢复 {enemy.currentHp - enemyHpBeforeHeal} 点生命，当前 {enemy.currentHp}/{enemy.maxHp}");
                         break;
                 }
             }
             else
             {
                 gameInfoText.text = "敌人被眩晕了，跳过回合";
+                GameLog(LogType.Turn, "敌人被眩晕，跳过行动");
             }
 
             enemy.OnTurnEnd();
@@ -289,6 +335,7 @@ namespace Test
             if (CheckGameOver()) return;
 
             // 敌人回合结束，开始玩家回合
+            GameLog(LogType.Turn, "敌人回合结束，准备进入玩家回合");
             Invoke("StartPlayerTurn", 1f);
         }
 
@@ -296,8 +343,11 @@ namespace Test
         void StartPlayerTurn()
         {
             currentState = GameState.PlayerTurn;
+            GameLog(LogType.Turn, "玩家回合开始");
             // 执行玩家回合开始buff
+            int playerHpBeforeTurnStart = player.currentHp;
             bool canAct = player.OnTurnStart();
+            LogTurnStartBuffResult("玩家", playerHpBeforeTurnStart, player.currentHp, canAct);
             UpdateAllUI();
 
             if (CheckGameOver()) return;
@@ -306,10 +356,12 @@ namespace Test
             {
                 DrawCards(1);
                 gameInfoText.text = "你的回合，选择一张牌打出";
+                GameLog(LogType.Turn, "玩家可以行动");
             }
             else
             {
                 gameInfoText.text = "你被眩晕了，跳过回合";
+                GameLog(LogType.Turn, "玩家被眩晕，跳过行动");
                 Invoke("EndPlayerTurn", 1f);
             }
         }
@@ -322,6 +374,7 @@ namespace Test
                 currentState = GameState.GameOver;
                 gameInfoText.text = "你输了！点击开始按钮重新开始";
                 startButton.gameObject.SetActive(true);
+                GameLog(LogType.Result, "游戏结束：玩家失败");
                 return true;
             }
             if (enemy.currentHp <= 0)
@@ -329,6 +382,7 @@ namespace Test
                 currentState = GameState.GameOver;
                 gameInfoText.text = "你赢了！点击开始按钮重新开始";
                 startButton.gameObject.SetActive(true);
+                GameLog(LogType.Result, "游戏结束：玩家胜利");
                 return true;
             }
             return false;
@@ -356,6 +410,61 @@ namespace Test
             return s;
         }
 
+        void LogTurnStartBuffResult(string targetName, int hpBefore, int hpAfter, bool canAct)
+        {
+            int hpChange = hpAfter - hpBefore;
+            if (hpChange > 0)
+            {
+                GameLog(LogType.Buff, $"{targetName}回合开始 Buff 生效：恢复 {hpChange} 点生命");
+            }
+            else if (hpChange < 0)
+            {
+                GameLog(LogType.Buff, $"{targetName}回合开始 Buff 生效：受到 {-hpChange} 点伤害");
+            }
+
+            if (!canAct)
+            {
+                GameLog(LogType.Buff, $"{targetName}受到眩晕影响，无法行动");
+            }
+        }
+
+        void GameLog(LogType type, string message)
+        {
+            Debug.Log($"<color={GetLogColor(type)}>[{GetLogLabel(type)}]</color> {message}");
+        }
+
+        string GetLogLabel(LogType type)
+        {
+            switch (type)
+            {
+                case LogType.Init: return "初始化";
+                case LogType.UI: return "UI";
+                case LogType.Deck: return "牌库";
+                case LogType.Card: return "卡牌";
+                case LogType.Turn: return "回合";
+                case LogType.Battle: return "战斗";
+                case LogType.Buff: return "Buff";
+                case LogType.Result: return "结果";
+                default: return "日志";
+            }
+        }
+
+        string GetLogColor(LogType type)
+        {
+            switch (type)
+            {
+                case LogType.Init: return "#5DADE2";
+                case LogType.UI: return "#95A5A6";
+                case LogType.Deck: return "#F1C40F";
+                case LogType.Card: return "#2ECC71";
+                case LogType.Turn: return "#3498DB";
+                case LogType.Battle: return "#E67E22";
+                case LogType.Buff: return "#9B59B6";
+                case LogType.Result: return "#E74C3C";
+                default: return "white";
+            }
+        }
+
         // 更新手牌UI（修复销毁报错）
         void UpdateHandUI()
         {
@@ -369,8 +478,6 @@ namespace Test
             {
                 oldCards.Add(handPanel.GetChild(i));
             }
-
-            handPanel.DetachChildren();
 
             foreach (Transform oldCard in oldCards)
             {
