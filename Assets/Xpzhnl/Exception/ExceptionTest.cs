@@ -16,7 +16,7 @@ namespace LearnUnity
         Debug.LogError("错误");
         Debug.Log(ints[0]);
         try{
-            obja = obja.a ==null ? new A() : null;
+            obja = obja.a == 0 ? new A() : null;
         }catch(Exception e){
             Debug.LogError("异常："+e);
         }
